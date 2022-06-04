@@ -1,5 +1,5 @@
 # Definition for a binary tree node.
-from typing import Optional
+from typing import Optional, Union, Any
 
 
 class TreeNode:
@@ -8,55 +8,32 @@ class TreeNode:
         self.left = left
         self.right = right
 
-        self.bestBoth = []
-        self.bestBothv = 0
-        self.bestOne = []
-        self.bestOnev = 0
-        self.pathFromBest = []
-        self.pathFromBestv = 0
-
 
 class Solution:
     def __init__(self):
-        self.currBest = []
+        self.best = None
 
-    def maxPathSum(self, root: Optional[TreeNode]) -> int:
-        self.setBests(root)
-
-        return max(root.bestBothv, root.bestOnev)
-
-    def setBests(self, root):
-
+    def maxPathSum(self, root: Optional[TreeNode]) -> Union[float, int]:
+        # Base Case
         if root is None:
-            return
+            return float('-inf')
 
-        self.setBests(root.left)
-        self.setBests(root.right)
+        # l and r store maximum path sum going through left
+        # and right child of root respectively
+        l = self.maxPathSum(root.left)
+        r = self.maxPathSum(root.right)
 
-        l = root.left if root.left else TreeNode(-9999999999, None, None)
-        r = root.right if root.left else TreeNode(-999999999, None, None)
+        # Max path for parent call of root. This path
+        # must include at most one child of root
+        max_single = max(max(l, r) + root.val, root.val)
 
+        # Max top represents the sum when the node under
+        # consideration is the root of the maxSum path and
+        # no ancestor of root are there in max sum path
+        max_top = max(max_single, l + r + root.val)
 
-        root.bestBothv = l.bestOnev + root.val + r.bestOnev
+        # Static variable to store the changes
+        # Store the maximum result
+        self.best = max(self.best, max_top)
 
-        root.bestBothv = max(root.bestBothv, l.bestBothv, r.bestBothv)
-        root.bestBoth += l.bestOne
-        root.bestBoth.append(root.val)
-        root.bestBoth += r.bestOne
-
-        root.pathFromBest.append(root.val)
-        root.pathFromBestv += root.val
-
-        if root.pathFromBestv < 0:
-            # path from best is still negative, don't change bestOne.
-            root.pathFromBest.append(root.val)
-        else:
-            # If val makes pathFromBest positive, we want to now have this as our bestOne
-            root.bestOne += root.pathFromBest
-            root.bestOnev += root.pathFromBestv
-            root.pathFromBest = []
-            root.pathFromBestv = 0
-
-
-root = TreeNode(-10, left=TreeNode(9), right=TreeNode(20, left=TreeNode(15), right=TreeNode(7)))
-print(Solution().maxPathSum(root))
+        return max_single
